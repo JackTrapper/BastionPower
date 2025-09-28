@@ -1,168 +1,175 @@
-local localSpellName = GetSpellInfo(114637)
+local localSpellName = GetSpellInfo(114637) --"Bastion of Glory" in whatever the current language is
 
-local bastionPowerFrame = CreateFrame("Frame" , "BastionPowerFrame" , PlayerFrame )
-bastionPowerFrame:SetPoint("TOP",PaladinPowerBar,"BOTTOM",0,6)
-bastionPowerFrame:SetWidth(84)
-bastionPowerFrame:SetHeight(30)
+-- Debug mode - enable by default for troubleshootinglocal BastionPowerDebug = false
+-- Slash command for debug toggle
+SLASH_BASTIONPOWER1 = "/bp"
+SlashCmdList["BASTIONPOWER"] = function(msg)
+	if msg == "debug" then
+		BastionPowerDebug = not BastionPowerDebug
+		print("BastionPower debug: " .. (BastionPowerDebug and "ON" or "OFF"))
+	elseif msg == "" or msg == "help" then		print("BastionPower commands:")
+		print("/bp debug - Toggle debug output")
+	else		print("Unknown BastionPower command. Type /bp help for commands.")
+	end
+end--making it draggable
+BastionPowerFrame:RegisterForDrag("LeftButton")
+BastionPowerFrame:SetScript("OnDragStart", BastionPowerFrame.StartMoving)
+BastionPowerFrame:SetScript("OnDragStop", BastionPowerFrame.StopMovingOrSizing)
+BastionPowerFrame:SetScript("OnMouseUp", function ( self, button )
+	if button == "RightButton" then		BastionPowerFrame:ClearAllPoints()
+		BastionPowerFrame:SetPoint("TOP",PaladinPowerBar,"BOTTOM",0,6)
+	end end)--[[BastionPowerStack1Fill:Hide()
+BastionPowerStack2Fill:Hide()
+BastionPowerStack3Fill:Hide()
+BastionPowerStack4Fill:Hide()
+BastionPowerStack5Fill:Hide()
+--]]
 
-local bastionPowerFrameBG = bastionPowerFrame:CreateTexture( "bastionPowerFrameBG")
-bastionPowerFrameBG:SetPoint("Center")
-bastionPowerFrameBG:SetWidth(128)
-bastionPowerFrameBG:SetHeight(32)
-bastionPowerFrameBG:SetTexture("Interface\\Addons\\BastionPower\\images\\bastionpower_frame.tga")
+local expiration;
 
+-- Initialize the timer properlyif BastionPowerTimer then
+	BastionPowerTimer:SetStatusBarTexture("Interface/Addons/BastionPower/images/timer_bar.tga")
+	BastionPowerTimer:SetMinMaxValues(0, 20)
+	BastionPowerTimer:SetValue(0)
+	print("BastionPower: Timer frame initialized successfully")
+else
+	print("BastionPower ERROR: Timer frame not found!")
+end
+BastionPowerTimer:SetScript("OnUpdate", function()
+	if expiration and expiration > 0 then
+		local timeLeft = expiration - GetTime()
+		if timeLeft > 0 then
+			BastionPowerTimer:SetValue(timeLeft)
+			-- Debug timer updates
+			if BastionPowerDebug and math.random() < 0.1 then -- Only print 10% of the time
+				print("BastionPower Timer: " .. string.format("%.1f", timeLeft) .. "s remaining, value set to: " .. timeLeft)
+			end
+		else
+			-- Buff expired
+			BastionPowerTimer:SetValue(0)
+			BastionPowerTimer:Hide()
+			if BastionPowerDebug then
+				print("BastionPower: Timer expired, hiding")
+			end		end	end
+end)
 
-
-local bastionPowerStack1 = CreateFrame("Frame", "BastionPowerStack1", BastionPowerFrame)
-bastionPowerStack1:SetPoint("Center",-30,7)
-bastionPowerStack1:SetWidth(16)
-bastionPowerStack1:SetHeight(16)
-
-local bastionPowerStack2 = CreateFrame("Frame", "BastionPowerStack2", BastionPowerFrame)
-bastionPowerStack2:SetPoint("Center",-17,3)
-bastionPowerStack2:SetWidth(20)
-bastionPowerStack2:SetHeight(8)
-
-local bastionPowerStack3 = CreateFrame("Frame", "BastionPowerStack3", BastionPowerFrame)
-bastionPowerStack3:SetPoint("Center",0,4)
-bastionPowerStack3:SetWidth(22)
-bastionPowerStack3:SetHeight(11)
-
-local bastionPowerStack4 = CreateFrame("Frame", "BastionPowerStack4", BastionPowerFrame)
-bastionPowerStack4:SetPoint("Center",17,3)
-bastionPowerStack4:SetWidth(20)
-bastionPowerStack4:SetHeight(8)
-
-local bastionPowerStack5 = CreateFrame("Frame", "BastionPowerStack5", BastionPowerFrame)
-bastionPowerStack5:SetPoint("Center",30,7)
-bastionPowerStack5:SetWidth(16)
-bastionPowerStack5:SetHeight(16)
-
-
-
-local bastionPowerStack1Fill = bastionPowerStack1:CreateTexture( "BastionPowerStack1Fill")
-bastionPowerStack1Fill:SetPoint("Center")
-bastionPowerStack1Fill:SetWidth(16)
-bastionPowerStack1Fill:SetHeight(16)
-bastionPowerStack1Fill:SetTexture("Interface\\Addons\\BastionPower\\images\\stack_1.tga")
-bastionPowerStack1Fill:Hide()
-
-local bastionPowerStack2Fill = bastionPowerStack2:CreateTexture( "BastionPowerStack2Fill")
-bastionPowerStack2Fill:SetPoint("Center")
-bastionPowerStack2Fill:SetWidth(32)
-bastionPowerStack2Fill:SetHeight(8)
-bastionPowerStack2Fill:SetTexture("Interface\\Addons\\BastionPower\\images\\stack_2.tga")
-bastionPowerStack2Fill:Hide()
-
-local bastionPowerStack3Fill = bastionPowerStack3:CreateTexture( "BastionPowerStack3Fill")
-bastionPowerStack3Fill:SetPoint("Center")
-bastionPowerStack3Fill:SetWidth(32)
-bastionPowerStack3Fill:SetHeight(16)
-bastionPowerStack3Fill:SetTexture("Interface\\Addons\\BastionPower\\images\\stack_3.tga")
-bastionPowerStack3Fill:Hide()
-
-local bastionPowerStack4Fill = bastionPowerStack4:CreateTexture( "BastionPowerStack4Fill")
-bastionPowerStack4Fill:SetPoint("Center")
-bastionPowerStack4Fill:SetWidth(32)
-bastionPowerStack4Fill:SetHeight(8)
-bastionPowerStack4Fill:SetTexture("Interface\\Addons\\BastionPower\\images\\stack_4.tga")
-bastionPowerStack4Fill:Hide()
-
-local bastionPowerStack5Fill = bastionPowerStack5:CreateTexture( "BastionPowerStack5Fill")
-bastionPowerStack5Fill:SetPoint("Center")
-bastionPowerStack5Fill:SetWidth(16)
-bastionPowerStack5Fill:SetHeight(16)
-bastionPowerStack5Fill:SetTexture("Interface\\Addons\\BastionPower\\images\\stack_5.tga")
-bastionPowerStack5Fill:Hide()
+BastionPowerTimer:Hide();
 
 
-
-
-local bastionPowerTimer = CreateFrame("StatusBar", "BastionPowerTimer", BastionPowerFrame)
-bastionPowerTimer:SetPoint("Center",0,-2)
-bastionPowerTimer:SetWidth(60)
-bastionPowerTimer:SetHeight(2)
-bastionPowerTimer:SetStatusBarTexture("Interface\\Addons\\BastionPower\\images\\timer_bar.tga")
-bastionPowerTimer:SetMinMaxValues(0,20)
-bastionPowerTimer:SetValue(0)
-local timerIsOn = 0
---local showBuffToolTip = 0
-
-
-
-
-bastionPowerFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
-bastionPowerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-bastionPowerFrame:SetScript("OnEvent", function()	
-	if GetSpecialization("player") == 2 and select(2,UnitClass("player")) == "PALADIN" then
-		bastionPowerFrame:Show() 
-	else
-		bastionPowerFrame:Hide()
-	end
+--show the frame only if you're the appropriate class and spec (i.e. prot paladin)
+BastionPowerFrame:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+BastionPowerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+BastionPowerFrame:SetScript("OnEvent", function()	
+	-- Check if player is a Paladin first
+	local _, class = UnitClass("player")
+	if class ~= "PALADIN" then
+		BastionPowerFrame:Hide()
+		return
+	end
+		-- In MoP Classic, check if player is Protection by looking for key Protection talents
+	-- Protection Paladins have "Devotion Aura" as a key spell that others don't get
+	local isProtection = false
+	
+	-- Method 1: Check if player has learned Protection-specific spells
+	if IsSpellKnown(465) or IsSpellKnown(31935) then -- Devotion Aura or Avenger's Shield
+		isProtection = true
+	end
+	
+	-- Method 2: Alternative - check for active talent spec (if available)
+	if GetActiveTalentGroup then
+		local spec = GetActiveTalentGroup()
+		-- In MoP, we can assume they want to use this addon if they're a paladin
+		-- since the buff only works for Protection anyway
+		isProtection = true
+	end
+	
+	if isProtection then
+		BastionPowerFrame:Show() 
+	else
+		BastionPowerFrame:Hide()
+	end
 end )
 
 
+--show tooltip for BoG and instructions for moving/draggin when mousing over the frame
+BastionPowerFrame:SetScript("OnEnter", function() 
+	GameTooltip_SetDefaultAnchor(GameTooltip, BastionPowerFrame)
+	GameTooltip:SetSpellByID(114637)
+	GameTooltip:AddLine("\nBastionPower:",0,0.7,1)
 
-bastionPowerFrame:SetScript("OnEnter", function() 
-	GameTooltip_SetDefaultAnchor(GameTooltip, bastionPowerFrame);
-	--showBuffToolTip = 1
-	--if timerIsOn == 1 then
-	--	GameTooltip:SetUnitBuff("player", localSpellName)
-	--else
-		GameTooltip:SetSpellByID(114637)
-	--end
-	GameTooltip:Show();
+	GameTooltip:AddLine("Left click and drag to move. \nRight click to reset position.")
+	GameTooltip:Show()
 end)
-bastionPowerFrame:SetScript("OnLeave", function() 
-	showBuffToolTip = 0
-	GameTooltip:Hide();
+BastionPowerFrame:SetScript("OnLeave", function() 
+	GameTooltip:Hide()
 end)
 
 
-bastionPowerStack1:RegisterEvent("UNIT_AURA")
-bastionPowerStack1:SetScript("OnEvent", function()	
-	local stacks = select(4,UnitBuff("player",localSpellName))
+--the meat of the addon: display charges of BoG as a resource bar
+BastionPowerStack1:RegisterEvent("UNIT_AURA")
+BastionPowerStack1:SetScript("OnEvent", function()	
+	-- Find the buff by searching through all buffs (MoP Classic compatible)
+	local stacks, duration = nil, nil
+	for i = 1, 40 do
+		local name, _, count, _, remainingTime = UnitBuff("player", i)
+		if not name then break end
+		if name == localSpellName then
+			stacks = count
+			duration = remainingTime
+			break
+		end
+	end
 	if stacks == nil then
-		bastionPowerStack1Fill:Hide()
-		bastionPowerStack2Fill:Hide()
-		bastionPowerStack3Fill:Hide()
-		bastionPowerStack4Fill:Hide()
-		bastionPowerStack5Fill:Hide()
-		timerIsOn = 0
-		bastionPowerTimer:SetValue(0)
+		-- Buff is gone, reset everything
+		expiration = nil
+		BastionPowerStack1Fill:Hide()
+		BastionPowerStack2Fill:Hide()
+		BastionPowerStack3Fill:Hide()
+		BastionPowerStack4Fill:Hide()
+		BastionPowerStack5Fill:Hide()
+		BastionPowerTimer:Hide()
 	else
-		timerIsOn = 1
-	end
-	if stacks == 1 then
-		bastionPowerStack1Fill:Show()
-	end
-	if stacks == 2 then
-		bastionPowerStack2Fill:Show()
-	end
-	if stacks == 3 then
-		bastionPowerStack3Fill:Show()
-	end
-	if stacks == 4 then
-		bastionPowerStack4Fill:Show()
-	end
-	if stacks == 5 then
-		bastionPowerStack5Fill:Show()
+		-- Only set expiration time if we don't have one yet (buff just appeared)
+		if not expiration then
+			expiration = GetTime() + (duration or 20)
+			if BastionPowerDebug then
+				print("BastionPower: New buff detected, setting expiration for " .. string.format("%.1f", duration or 20) .. " seconds")
+			end
+		end
+		-- Set up timer bar
+		local timeLeft = expiration - GetTime()
+		BastionPowerTimer:SetValue(timeLeft);
+		BastionPowerTimer:Show();
+		
+		-- Debug output
+		if BastionPowerDebug then
+			local minVal, maxVal = BastionPowerTimer:GetMinMaxValues()
+			local currentVal = BastionPowerTimer:GetValue()
+			print("BastionPower: Buff found, stacks=" .. (stacks or 0) .. ", timeLeft=" .. string.format("%.1f", timeLeft) .. ", expiration=" .. (expiration or "nil"))
+			print("BastionPower: Timer min/max=" .. minVal .. "/" .. maxVal .. ", current value=" .. currentVal .. ", timer visible=" .. tostring(BastionPowerTimer:IsVisible()))
+		end
+		-- Hide all first, then show up to current stacks
+		BastionPowerStack1Fill:Hide()
+		BastionPowerStack2Fill:Hide()
+		BastionPowerStack3Fill:Hide()
+		BastionPowerStack4Fill:Hide()
+		BastionPowerStack5Fill:Hide()
+
+		if stacks >= 1 then
+			BastionPowerStack1Fill:Show()
+		end
+		if stacks >= 2 then
+			BastionPowerStack2Fill:Show()
+		end
+		if stacks >= 3 then
+			BastionPowerStack3Fill:Show()
+		end
+		if stacks >= 4 then
+			BastionPowerStack4Fill:Show()
+		end
+		if stacks >= 5 then
+			BastionPowerStack5Fill:Show()
+		end
 	end
 end)
 
-
-
-bastionPowerTimer:SetScript("OnUpdate", function()
-	if timerIsOn == 1 then
-		bastionPowerTimer:SetValue((select(7,UnitBuff("player",localSpellName)) -GetTime()))
-	end
-	--if showBuffToolTip ==1 then
-	--	if timerIsOn == 1 then
-	--		GameTooltip:SetUnitBuff("player", localSpellName)
-	--	else
-	--		GameTooltip:SetSpellByID(114637)
-	--	end
-	--end
-end)
-
-

@@ -1,0 +1,321 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+
+	<Frame name="BastionPowerFrame" parent="PlayerFrame" movable="true" enablemouse="true" clampedtoscreen="true">
+
+		<Size>
+
+		 	<AbsDimension x="84" y="30" />
+
+		</Size>
+
+		<Anchors>
+
+			<Anchor point="TOP" relativeTo="PaladinPowerBar" relativePoint="BOTTOM">
+
+			   <Offset>
+
+					<AbsDimension x="0" y="6" />
+
+			   </Offset>
+
+			</Anchor>
+
+		</Anchors>
+
+		<Layers>
+
+			<Layer>
+
+				<Texture file="Interface/Addons/BastionPower/images/bastionpower_frame.tga">
+
+					<Size>
+
+					 	<AbsDimension x="128" y="32" />
+
+					</Size>
+
+					<Anchors>
+
+						<Anchor point="CENTER" />
+
+					</Anchors>
+
+				</Texture>
+
+			</Layer>
+
+		</Layers>
+
+		<Frames>
+
+			<Frame name="BastionPowerStack1">
+
+				<Size>
+
+					<AbsDimension x="16" y="16" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="-30" y="7" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<Layers>
+
+					<Layer>
+
+						<Texture name="$parentFill" file="Interface/Addons/BastionPower/images/stack_1.tga">
+
+							<Size>
+
+							 	<AbsDimension x="16" y="16" />
+
+							</Size>
+
+							<Anchors>
+
+								<Anchor point="CENTER" />
+
+							</Anchors>
+
+						</Texture>
+
+					</Layer>
+
+				</Layers>
+
+			</Frame>			
+
+			<Frame name="BastionPowerStack2">
+
+				<Size>
+
+					<AbsDimension x="20" y="8" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="-17" y="3" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<Layers>
+
+					<Layer>
+
+						<Texture name="$parentFill" file="Interface/Addons/BastionPower/images/stack_2.tga">
+
+							<Size>
+
+							 	<AbsDimension x="32" y="8" />
+
+							</Size>
+
+							<Anchors>
+
+								<Anchor point="CENTER" />
+
+							</Anchors>
+
+						</Texture>
+
+					</Layer>
+
+				</Layers>
+
+			</Frame>			
+
+			<Frame name="BastionPowerStack3">
+
+				<Size>
+
+					<AbsDimension x="22" y="11" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="0" y="4" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<Layers>
+
+					<Layer>
+
+						<Texture name="$parentFill" file="Interface/Addons/BastionPower/images/stack_3.tga">
+
+							<Size>
+
+							 	<AbsDimension x="32" y="16" />
+
+							</Size>
+
+							<Anchors>
+
+								<Anchor point="CENTER" />
+
+							</Anchors>
+
+						</Texture>
+
+					</Layer>
+
+				</Layers>
+
+			</Frame>
+
+			<Frame name="BastionPowerStack4">
+
+				<Size>
+
+					<AbsDimension x="20" y="8" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="17" y="3" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<Layers>
+
+					<Layer>
+
+						<Texture name="$parentFill" file="Interface/Addons/BastionPower/images/stack_4.tga">
+
+							<Size>
+
+							 	<AbsDimension x="32" y="8" />
+
+							</Size>
+
+							<Anchors>
+
+								<Anchor point="CENTER" />
+
+							</Anchors>
+
+						</Texture>
+
+					</Layer>
+
+				</Layers>
+
+			</Frame>			
+
+			<Frame name="BastionPowerStack5">
+
+				<Size>
+
+					<AbsDimension x="16" y="16" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="30" y="7" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<Layers>
+
+					<Layer>
+
+						<Texture name="$parentFill" file="Interface/Addons/BastionPower/images/stack_5.tga">
+
+							<Size>
+
+							 	<AbsDimension x="16" y="16" />
+
+							</Size>
+
+							<Anchors>
+
+								<Anchor point="CENTER" />
+
+							</Anchors>
+
+						</Texture>
+
+					</Layer>
+
+				</Layers>
+
+			</Frame>
+
+			<StatusBar name="BastionPowerTimer" minvalue="0" maxvalue="20" defaultvalue="0">
+
+				<Size>
+
+					<AbsDimension x="60" y="2" />
+
+				</Size>
+
+				<Anchors>
+
+					<Anchor point="CENTER">
+
+						<Offset>
+
+							<AbsDimension x="0" y="-2" />
+
+						</Offset>
+
+					</Anchor>
+
+				</Anchors>
+
+				<BarTexture file="Interface/Addons/BastionPower/images/timer_bar.tga" />
+
+			</StatusBar>		
+
+		</Frames>
+
+	</Frame>
+
+</Ui>
