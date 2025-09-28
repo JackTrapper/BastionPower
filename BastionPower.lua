@@ -1,15 +1,92 @@
 local localSpellName = GetSpellInfo(114637) --"Bastion of Glory" in whatever the current language is
 
--- Debug mode - enable by default for troubleshootinglocal BastionPowerDebug = false
--- Slash command for debug toggle
+-- Logging system with Windows trace levels
+local TRACE_LEVEL_NONE = 0        -- Tracing is not on
+local TRACE_LEVEL_CRITICAL = 1    -- Abnormal exit or termination events
+local TRACE_LEVEL_ERROR = 2       -- Severe error events
+local TRACE_LEVEL_WARNING = 3     -- Warning events such as allocation failures
+local TRACE_LEVEL_INFORMATION = 4 -- Non-error events such as entry or exit events
+local TRACE_LEVEL_VERBOSE = 5     -- Detailed trace events
+
+local currentTraceLevel = TRACE_LEVEL_INFORMATION -- Default to INFO level
+
+local traceLevelNames = {
+	[TRACE_LEVEL_NONE] = "NONE",
+	[TRACE_LEVEL_CRITICAL] = "CRITICAL",
+	[TRACE_LEVEL_ERROR] = "ERROR",
+	[TRACE_LEVEL_WARNING] = "WARNING", 
+	[TRACE_LEVEL_INFORMATION] = "INFORMATION",
+	[TRACE_LEVEL_VERBOSE] = "VERBOSE"
+}
+
+local traceLevelPrefixes = {
+	[TRACE_LEVEL_CRITICAL] = "[CRITICAL]",
+	[TRACE_LEVEL_ERROR] = "[ERROR  ]",
+	[TRACE_LEVEL_WARNING] = "[WARNING]",
+	[TRACE_LEVEL_INFORMATION] = "[INFO   ]",
+	[TRACE_LEVEL_VERBOSE] = "[VERBOSE]"
+}
+
+-- Color codes for different trace levelslocal traceLevelColors = {
+	[TRACE_LEVEL_CRITICAL] = "|cFFFF0000",  -- Bright Red (same as ERROR for now)
+	[TRACE_LEVEL_ERROR] = "|cFFFF0000",     -- Bright Red (bold effect via color)
+	[TRACE_LEVEL_WARNING] = "|cFF8B0000",   -- Dark Red
+	[TRACE_LEVEL_INFORMATION] = "",         -- Default color (no color code)
+	[TRACE_LEVEL_VERBOSE] = "|cFF808080"    -- Gray
+}
+
+-- Common logging function
+local function Log(level, message)
+	if level <= currentTraceLevel then
+		local prefix = traceLevelPrefixes[level] or "[UNKNOWN]"
+		local colorCode = traceLevelColors[level] or ""
+		local resetCode = (colorCode ~= "") and "|r" or ""
+		
+		print(colorCode .. "BastionPower " .. prefix .. " " .. message .. resetCode)
+	end
+end
+-- Slash command for debug control
 SLASH_BASTIONPOWER1 = "/bp"
 SlashCmdList["BASTIONPOWER"] = function(msg)
-	if msg == "debug" then
-		BastionPowerDebug = not BastionPowerDebug
-		print("BastionPower debug: " .. (BastionPowerDebug and "ON" or "OFF"))
-	elseif msg == "" or msg == "help" then		print("BastionPower commands:")
-		print("/bp debug - Toggle debug output")
-	else		print("Unknown BastionPower command. Type /bp help for commands.")
+	local args = {}
+	for word in msg:gmatch("%S+") do
+		table.insert(args, word:lower())
+	end
+	
+	if args[1] == "debug" then
+		if args[2] == "verbose" then
+			currentTraceLevel = TRACE_LEVEL_VERBOSE
+			Log(TRACE_LEVEL_INFORMATION, "Trace level set to VERBOSE")
+		elseif args[2] == "info" then
+			currentTraceLevel = TRACE_LEVEL_INFORMATION
+			Log(TRACE_LEVEL_INFORMATION, "Trace level set to INFORMATION")
+		elseif args[2] == "warn" or args[2] == "warning" then
+			currentTraceLevel = TRACE_LEVEL_WARNING
+			Log(TRACE_LEVEL_INFORMATION, "Trace level set to WARNING")
+		elseif args[2] == "error" then
+			currentTraceLevel = TRACE_LEVEL_ERROR
+			Log(TRACE_LEVEL_INFORMATION, "Trace level set to ERROR")
+		elseif args[2] == "critical" then
+			currentTraceLevel = TRACE_LEVEL_CRITICAL
+			Log(TRACE_LEVEL_INFORMATION, "Trace level set to CRITICAL")
+		elseif args[2] == "none" or args[2] == "off" then
+			currentTraceLevel = TRACE_LEVEL_NONE
+			print("BastionPower logging disabled")
+		else
+			-- Toggle between NONE and INFORMATION for legacy compatibility
+			if currentTraceLevel == TRACE_LEVEL_NONE then
+				currentTraceLevel = TRACE_LEVEL_INFORMATION
+				Log(TRACE_LEVEL_INFORMATION, "Trace level set to INFORMATION")
+			else
+				currentTraceLevel = TRACE_LEVEL_NONE
+				print("BastionPower logging disabled")
+			end
+		end
+	elseif args[1] == "" or args[1] == "help" then		print("BastionPower commands:")
+		print("/bp debug [verbose||info||warn||error||critical||none] - Set trace level")
+		print("/bp debug - Toggle between INFO and OFF")
+		print("Current trace level: " .. (traceLevelNames[currentTraceLevel] or "UNKNOWN"))
+	else		Log(TRACE_LEVEL_WARNING, "Unknown command. Type /bp help for commands.")
 	end
 end--making it draggable
 BastionPowerFrame:RegisterForDrag("LeftButton")
@@ -31,9 +108,9 @@ local expiration;
 	BastionPowerTimer:SetStatusBarTexture("Interface/Addons/BastionPower/images/timer_bar.tga")
 	BastionPowerTimer:SetMinMaxValues(0, 20)
 	BastionPowerTimer:SetValue(0)
-	print("BastionPower: Timer frame initialized successfully")
+	Log(TRACE_LEVEL_INFORMATION, "Timer frame initialized successfully")
 else
-	print("BastionPower ERROR: Timer frame not found!")
+	Log(TRACE_LEVEL_ERROR, "Timer frame not found!")
 end
 BastionPowerTimer:SetScript("OnUpdate", function()
 	if expiration and expiration > 0 then
@@ -41,16 +118,15 @@ end
 		if timeLeft > 0 then
 			BastionPowerTimer:SetValue(timeLeft)
 			-- Debug timer updates
-			if BastionPowerDebug and math.random() < 0.1 then -- Only print 10% of the time
-				print("BastionPower Timer: " .. string.format("%.1f", timeLeft) .. "s remaining, value set to: " .. timeLeft)
+			if math.random() < 0.1 then -- Only print 10% of the time
+				Log(TRACE_LEVEL_VERBOSE, "Timer: " .. string.format("%.1f", timeLeft) .. "s remaining, value set to: " .. timeLeft)
 			end
 		else
 			-- Buff expired
 			BastionPowerTimer:SetValue(0)
 			BastionPowerTimer:Hide()
-			if BastionPowerDebug then
-				print("BastionPower: Timer expired, hiding")
-			end		end	end
+			Log(TRACE_LEVEL_INFORMATION, "Timer expired, hiding")
+		end	end
 end)
 
 BastionPowerTimer:Hide();
@@ -114,40 +190,65 @@ BastionPowerTimer:Hide();
 		local name, _, count, _, remainingTime = UnitBuff("player", i)
 		if not name then break end
 		if name == localSpellName then
-			stacks = count
-			duration = remainingTime
+			-- Validate that this is actually an active buff with meaningful time
+			if remainingTime and remainingTime > 0 then
+				stacks = count
+				duration = remainingTime
+			end
 			break
 		end
 	end
-	if stacks == nil then
-		-- Buff is gone, reset everything
+	if stacks == nil or duration == nil or duration <= 0 then
+		-- Buff is gone or invalid, reset everything
+		if expiration then
+			Log(TRACE_LEVEL_INFORMATION, "Buff lost or expired, cleaning up")
+		end
 		expiration = nil
 		BastionPowerStack1Fill:Hide()
-		BastionPowerStack2Fill:Hide()
-		BastionPowerStack3Fill:Hide()
-		BastionPowerStack4Fill:Hide()
-		BastionPowerStack5Fill:Hide()
-		BastionPowerTimer:Hide()
-	else
-		-- Only set expiration time if we don't have one yet (buff just appeared)
+		BastionPowerStack2Fill:Hide()
+		BastionPowerStack3Fill:Hide()
+		BastionPowerStack4Fill:Hide()
+		BastionPowerStack5Fill:Hide()
+		BastionPowerTimer:Hide()
+	else
+		-- Calculate what the expiration should be and current timeLeft
+		local expectedExpiration = GetTime() + (duration or 20)
+		local timeLeft = expiration and (expiration - GetTime()) or 0
+				-- Set or update expiration time in these cases:
+		-- 1. No expiration set yet (new buff)
+		-- 2. TimeLeft is negative or way too big (bad expiration)
+		-- 3. Current duration is significantly different from what we expect (buff refreshed)
+		local needsUpdate = false
+		local reason = ""
+		
 		if not expiration then
-			expiration = GetTime() + (duration or 20)
-			if BastionPowerDebug then
-				print("BastionPower: New buff detected, setting expiration for " .. string.format("%.1f", duration or 20) .. " seconds")
-			end
+			needsUpdate = true
+			reason = "New buff detected"
+		elseif timeLeft < 0 or timeLeft > 25 then
+			needsUpdate = true
+			reason = "Fixed bad expiration time"
+		elseif duration and math.abs(timeLeft - duration) > 2 then
+			-- If the remaining time differs significantly from the buff duration, it was likely refreshed
+			needsUpdate = true
+			reason = "Buff refreshed (duration mismatch)"
 		end
-		-- Set up timer bar
-		local timeLeft = expiration - GetTime()
-		BastionPowerTimer:SetValue(timeLeft);
+		
+		if needsUpdate then
+			expiration = expectedExpiration
+			timeLeft = duration or 20
+			Log(TRACE_LEVEL_INFORMATION, reason .. ", setting expiration for " .. string.format("%.1f", duration or 20) .. " seconds")
+		else
+			-- Use our tracked expiration time
+			timeLeft = expiration - GetTime()
+		end
+				BastionPowerTimer:SetValue(timeLeft);
 		BastionPowerTimer:Show();
 		
 		-- Debug output
-		if BastionPowerDebug then
-			local minVal, maxVal = BastionPowerTimer:GetMinMaxValues()
-			local currentVal = BastionPowerTimer:GetValue()
-			print("BastionPower: Buff found, stacks=" .. (stacks or 0) .. ", timeLeft=" .. string.format("%.1f", timeLeft) .. ", expiration=" .. (expiration or "nil"))
-			print("BastionPower: Timer min/max=" .. minVal .. "/" .. maxVal .. ", current value=" .. currentVal .. ", timer visible=" .. tostring(BastionPowerTimer:IsVisible()))
-		end
+		local minVal, maxVal = BastionPowerTimer:GetMinMaxValues()
+		local currentVal = BastionPowerTimer:GetValue()
+		Log(TRACE_LEVEL_VERBOSE, "Buff found, stacks=" .. (stacks or 0) .. ", timeLeft=" .. string.format("%.1f", timeLeft) .. ", expiration=" .. (expiration or "nil"))
+		Log(TRACE_LEVEL_VERBOSE, "Timer min/max=" .. minVal .. "/" .. maxVal .. ", current value=" .. currentVal .. ", timer visible=" .. tostring(BastionPowerTimer:IsVisible()))
 		-- Hide all first, then show up to current stacks
 		BastionPowerStack1Fill:Hide()
 		BastionPowerStack2Fill:Hide()
