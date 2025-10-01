@@ -2,7 +2,8 @@
 ## Interface-Classic: 11503
 ## Interface-Cata: 44402  
 ## Interface-Wrath: 30403
-## Title: BastionPower
+
+## Title: BastionPower
 ## Author: Montinevra#1437
 ## Version: 5.5.1.1
 ## Notes: Displays Bastion of Glory charges as a resource bar under your player portrait.
@@ -10,7 +11,8 @@
 
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
-## SavedVariables: BastionPowerDB
+
 ## OptionalDeps: Ace3, LibStub
-BastionPower.xml
+
+BastionPower.xml
 BastionPower.lua
